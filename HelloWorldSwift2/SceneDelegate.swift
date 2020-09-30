@@ -2,10 +2,11 @@
 //  SceneDelegate.swift
 //  HelloWorldSwift2
 //
-//  Created by hiroyuki on 2020/09/26.
+//  Created by hiroyuki on 2020/09/30.
 //
 
 import UIKit
+import SwiftyDropbox
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
@@ -46,7 +47,28 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     // Use this method to save data, release shared resources, and store enough scene-specific state information
     // to restore the scene back to its current state.
   }
-
-
+  
+  func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>)
+  {
+    // コールバックで来たURLの取得
+    guard let url = URLContexts.first?.url else {
+      return
+    }
+    
+    let oauthCompletion: DropboxOAuthCompletion = {
+      if let authResult = $0 {
+        switch authResult {
+        case .success:
+          print("Success! User is logged into DropboxClientsManager.")
+        case .cancel:
+          print("Authorization flow was manually canceled by user!")
+        case .error(_, let description):
+          print("Error: \(String(describing: description))")
+        }
+      }
+    }
+    DropboxClientsManager.handleRedirectURL(url, completion: oauthCompletion)
+    return
+  }
 }
 
